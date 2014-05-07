@@ -1,4 +1,4 @@
-Teaching-HEIGVD-RES-WebInfra
+Welcome
 ============================
 
-A repo for the web infrastructure lab.
+This repo is used for the Web Infrastructure lab. Fork and clone it.
