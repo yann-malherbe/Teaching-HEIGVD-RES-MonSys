@@ -1,0 +1,78 @@
+upstream web-nodes  {
+      ip_hash;
+      server 172.17.0.3:80;
+      server 172.17.0.4:80;
+}
+
+upstream app-nodes  {
+      server 172.17.0.5:80;
+}
+
+# ------------------------------------------------------------------------------------ 
+# nginx is acting as a pure reverse proxy, i.e. it does not server any web content
+# directly (in this config). If a client does not send a valid Host header, then we
+# simply close the connection.
+# ------------------------------------------------------------------------------------ 
+server {
+	listen 80 default_server;
+	return      444;
+	
+	# We could have decided to serve web content if the client did not send a valid
+	# Host header. In that case, we would have added the following two lines and removed
+	# the "return 444" instruction.
+	# root /usr/share/nginx/html;
+	# index index.html index.htm;
+}
+
+# ------------------------------------------------------------------------------------ 
+# If clients send requests to http://res.heig-vd.ch/ (more precisely, if they send a 
+# Host header with a value of "res.heig-vd.ch", then nginx forwards the request to the
+# apache node 
+# ------------------------------------------------------------------------------------ 
+server {
+	listen 80;
+
+	server_name res.heig-vd.ch;
+
+	location / {
+    	proxy_pass  http://web-nodes;
+     	proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+		proxy_redirect off;
+     	proxy_buffering off;
+     	proxy_set_header        Host            $host;
+     	proxy_set_header        X-Real-IP       $remote_addr;
+     	proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+
+}
+
+server {
+	listen 80;
+
+	server_name www.monsys.com;
+
+	location /ajax/ {
+    	proxy_pass  http://app-nodes;
+     	proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+		proxy_redirect off;
+     	proxy_buffering off;
+     	proxy_set_header        Host            $host;
+     	proxy_set_header        X-Real-IP       $remote_addr;
+     	proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+
+	location / {
+    	proxy_pass  http://web-nodes;
+     	proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+		proxy_redirect off;
+     	proxy_buffering off;
+     	proxy_set_header        Host            $host;
+     	proxy_set_header        X-Real-IP       $remote_addr;
+     	proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+
+}
+
+
+
+

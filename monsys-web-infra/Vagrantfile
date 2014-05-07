@@ -1,0 +1,110 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+	# Every Vagrant virtual environment requires a box to build off of.
+	config.vm.box = "mybox"
+
+	# Create a private network, which allows host-only access to the machine
+	# using a specific IP.
+	config.vm.network :private_network, ip: "192.168.33.20"
+
+	# Create a forwarded port mapping which allows access to a specific port
+	# within the machine from a port on the host machine. In the example below,
+	# accessing "localhost:8080" will access port 80 on the guest machine.
+	config.vm.network "forwarded_port", guest: 9090, host: 8080
+	
+
+    # ==============================================================================
+    # Provisioning - what do we when we want to set the box in its intial state?
+    # ==============================================================================
+	
+    # ==============================================================================
+    # Provisioning, part 1: we run a script to reset the Docker environment
+    # ==============================================================================
+
+	# When doing the setup, we realized that when Vagrant provisions the box with
+	# Dockers, then it tries to start a container (that might have been stopped).
+	# When applying changes in the Dockerfile config, changes were not taken into
+	# consideration when doing a "vagrant provision". To avoid this issue, we
+	# make sure to clean up the docker environment before doing the provisioning. 
+	
+    $script = <<SCRIPT
+	echo Cleaning up Docker containers...
+	docker stop rp-node || true
+	docker stop web-node-1 || true
+	docker stop web-node-2 || true
+	docker stop app-node || true
+	docker rm rp-node || true
+	docker rm web-node-1 || true
+	docker rm web-node-2 || true
+	docker rm app-node || true
+SCRIPT
+	
+	config.vm.provision "shell", inline: $script
+	
+    # ==============================================================================
+    # Provisioning, part 2: we use Docker to package and run services in our VM
+    # ==============================================================================
+
+	config.vm.provision "docker" do |d|
+
+	    # Firstly, we need to create a Docker image. This might trigger the download from
+	    # a base image, but we have made sure to do that already. When you get the box,
+	    # you get the Docker base image at the same time.
+		# If you want to inspect this image (browse the file system), use this command
+		# docker run -i -t --entrypoint='/bin/bash' heig/rp-nginx -i
+	
+		d.build_image "/vagrant/docker/rp-nginx", args: "-t heig/rp-nginx"
+		
+
+	    # Secondly, we need to run the Docker image. This is also where we define the port
+	    # mapping: if a client tries to open a TCP connection on the IP of the box and on the 
+	    # specified port, it will get a connection to the container on port 80
+
+		d.run "rp-node", image: "heig/rp-nginx", args: "-p 9090:80"
+
+
+        # Same thing for the web server image, from which we run 2 containers. Same thing
+        # also for the application server (which runs the Node.js server)
+        # Again, if you want to inspect the images, use the following commands:
+		# docker run -i -t --entrypoint='/bin/bash' heig/web-apache -i
+		# docker run -i -t --entrypoint='/bin/bash' heig/app-nodejs -i
+
+		d.build_image "/vagrant/docker/web-apache", args: "-t heig/web-apache"
+		d.run "web-node-1", image: "heig/web-apache", args: "-p 8081:80"
+		d.run "web-node-2", image: "heig/web-apache", args: "-p 8082:80"
+		
+		d.build_image "/vagrant/docker/app-nodejs", args: "-t heig/app-nodejs"
+		d.run "app-node", image: "heig/app-nodejs", args: "-p 7070:80"
+		
+	end
+
+    # ==============================================================================
+    # Configuration parameters in the original Vagrant file, not used at the moment.
+    # ==============================================================================
+
+	# The url from where the 'config.vm.box' box will be fetched if it
+	# doesn't already exist on the user's system.
+	# config.vm.box_url = "http://domain.com/path/to/above.box"
+
+	# Create a public network, which generally matched to bridged network.
+	# Bridged networks make the machine appear as another physical device on
+	# your network.
+	# config.vm.network "public_network"
+
+	# If true, then any SSH connections made will enable agent forwarding.
+	# Default value: false
+	# config.ssh.forward_agent = true
+
+	# Share an additional folder to the guest VM. The first argument is
+	# the path on the host to the actual folder. The second argument is
+	# the path on the guest to mount the folder. And the optional third
+	# argument is a set of non-required options.
+	# config.vm.synced_folder "../data", "/vagrant_data"
+	
+end
