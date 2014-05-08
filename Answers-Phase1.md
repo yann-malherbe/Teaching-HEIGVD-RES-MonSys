@@ -2,8 +2,8 @@
 
 ```
 # -- INSERT YOUR NAMES HERE -----
-First name, Last name
-First name, Last name
+Yann Malherbe
+Cédric Rudareanu
 
 We certify that we have done all the lab tasks and we have a running environment on our 
 machine to prove it. We are ready to demonstrate it at any time and to explain the process
