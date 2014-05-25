@@ -168,7 +168,7 @@ Which command did you type on the terminal to establish the connection?
 telnet www.monsys.com 9090
 
 What HTTP request did you type and send?
-GET / HTTP/1.0
+GET / HTTP/1.1
 Host: www.monsys.com
 
 What HTTP response did you get?
@@ -260,9 +260,13 @@ What HTTP response did you get?
 What procedure did you follow to validate the configuration of 
 your new web nodes? 
 
-	We checked the IP address of each dockers and open a telnet connection on port 80 on them.
-	In the telnet session check the content of each two hosts available on the docker with
+	We checked the IP address of each dockers and opened a telnet connection on port 80 on them.
+	In the telnet session checked the content of each two hosts available on the docker with
 	a HTTP request. More details about the procedure below.
+
+	We also modified the configuration of the virtual hosts and the root directories in the Apache2 conf files.
+
+	Finally we modified our local hosts file to redirect the live and dashboard to the virtual machine's IP address.
 
 Provide details and evidence (command results, etc.) that your 
 setup is correct.
@@ -279,21 +283,33 @@ We check the IP address of the different docker
 	vagrant@ubuntu-14:~$ docker inspect web-clash-3 | grep IPAdd
 	        "IPAddress": "172.17.0.8",
 
+We created the Apache2 conf files
+	
+	dashboard.clashofclasses.ch.conf
+		ServerName dashboard.clashofclasses.ch
+		DocumentRoot /var/www/dashboard.clashofclasses.ch/public_html
+
+	and
+
+	live.clashofclasses.ch.conf
+		ServerName live.clashofclasses.ch
+		DocumentRoot /var/www/live.clashofclasses.ch/public_html
+
 We start a telnet connection on port 80 for each docker IP address
 
 	telnet 172.17.0.6 80 / telnet 172.17.0.7 80 / telnet 172.17.0.8 80
-	 
+
 We check the content of "dashboard.clashofclasses.ch"
 
-	GET / HTTP/1.0
+	GET / HTTP/1.1
 	Host: dashboard.clashofclasses.ch
 
 And we finally check the content of "live.clashofclasses.ch"
 
-	GET / HTTP/1.0
+	GET / HTTP/1.1
 	Host: live.clashofclasses.ch
 	
-Result for each "GET / HTTP/1.0 \ Host: dashboard.clashofclasses.ch"
+Result for each "GET / HTTP/1.1 \ Host: dashboard.clashofclasses.ch"
 
 	HTTP/1.1 200 OK
 	Date: Sat, 24 May 2014 15:39:29 GMT
@@ -365,7 +381,7 @@ Result for each "GET / HTTP/1.0 \ Host: dashboard.clashofclasses.ch"
 	</html>
 
 
-Result for each "GET / HTTP/1.0 \ Host: live.clashofclasses.ch"
+Result for each "GET / HTTP/1.1 \ Host: live.clashofclasses.ch"
 
 	HTTP/1.1 200 OK
 	Date: Sat, 24 May 2014 15:43:06 GMT
@@ -442,6 +458,12 @@ Result for each "GET / HTTP/1.0 \ Host: live.clashofclasses.ch"
 
 What procedure did you follow to validate the configuration of 
 your complete infrastructure?
+	
+	First we've add upstream clash-nodes with the three IP addresses in the default file of nginx. Then we've add two "server{}" configs with "server_name" dashboard.clashofclasses.ch and live.clashofclasses.ch and set clash-nodes as "proxy_pass".
+
+	Secondly, we've modified the line 80 of Vagrantfile as:
+		d.run "rp-node", image: "heig/rp-nginx", args: "-p 80:80"
+	Then, we can use the default http port instead of 9090
 
 Provide details and evidence (command results, etc.) that your 
 setup is correct.
@@ -449,4 +471,15 @@ setup is correct.
 # -------------------------------
 ```
 
+```
+# -- ANNEXE - Hosts file --
 
+	# localhost name resolution is handled within DNS itself.
+		127.0.0.1       localhost
+		::1             localhost
+		192.168.33.20	www.monsys.com
+		192.168.33.20	live.clashofclasses.ch 
+		192.168.33.20	dashboard.clashofclasses.ch
+
+# -------------------------------
+```
