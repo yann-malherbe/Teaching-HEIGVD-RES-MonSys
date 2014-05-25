@@ -20,7 +20,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	# Create a forwarded port mapping which allows access to a specific port
 	# within the machine from a port on the host machine. In the example below,
 	# accessing "localhost:8080" will access port 80 on the guest machine.
-	config.vm.network "forwarded_port", guest: 9090, host: 8080
+	 config.vm.network "forwarded_port", guest: 9090, host: 8080
+	 #config.vm.network "forwarded_port", guest: 80, host: 8080
 	
 
     # ==============================================================================
@@ -43,10 +44,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	docker stop web-node-1 || true
 	docker stop web-node-2 || true
 	docker stop app-node || true
+	docker stop web-clash-1 || true
+	docker stop web-clash-2 || true
+	docker stop web-clash-3 || true
 	docker rm rp-node || true
 	docker rm web-node-1 || true
 	docker rm web-node-2 || true
 	docker rm app-node || true
+	docker rm web-clash-1 || true
+	docker rm web-clash-2 || true
+	docker rm web-clash-3 || true
+				
 SCRIPT
 	
 	config.vm.provision "shell", inline: $script
@@ -86,6 +94,11 @@ SCRIPT
 		d.build_image "/vagrant/docker/app-nodejs", args: "-t heig/app-nodejs"
 		d.run "app-node", image: "heig/app-nodejs", args: "-p 7070:80"
 		
+		# New image and docker for the clash web server 
+		d.build_image "/vagrant/docker/web-clash", args: "-t heig/web-clash"
+		d.run "web-clash-1", image: "heig/web-clash", args: "-p 5051:80"
+		d.run "web-clash-2", image: "heig/web-clash", args: "-p 5052:80"
+		d.run "web-clash-3", image: "heig/web-clash", args: "-p 5053:80"
 	end
 
     # ==============================================================================

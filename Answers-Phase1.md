@@ -260,10 +260,182 @@ What HTTP response did you get?
 What procedure did you follow to validate the configuration of 
 your new web nodes? 
 
+	We checked the IP address of each dockers and open a telnet connection on port 80 on them.
+	In the telnet session check the content of each two hosts available on the docker with
+	a HTTP request. More details about the procedure below.
+
 Provide details and evidence (command results, etc.) that your 
 setup is correct.
 # -------------------------------
 ```
+We check the IP address of the different docker
+
+	vagrant@ubuntu-14:~$ docker inspect web-clash-1 | grep IPAdd
+	        "IPAddress": "172.17.0.6",
+
+	vagrant@ubuntu-14:~$ docker inspect web-clash-2 | grep IPAdd
+	        "IPAddress": "172.17.0.7",
+
+	vagrant@ubuntu-14:~$ docker inspect web-clash-3 | grep IPAdd
+	        "IPAddress": "172.17.0.8",
+
+We start a telnet connection on port 80 for each docker IP address
+
+	telnet 172.17.0.6 80 / telnet 172.17.0.7 80 / telnet 172.17.0.8 80
+	 
+We check the content of "dashboard.clashofclasses.ch"
+
+	GET / HTTP/1.0
+	Host: dashboard.clashofclasses.ch
+
+And we finally check the content of "live.clashofclasses.ch"
+
+	GET / HTTP/1.0
+	Host: live.clashofclasses.ch
+	
+Result for each "GET / HTTP/1.0 \ Host: dashboard.clashofclasses.ch"
+
+	HTTP/1.1 200 OK
+	Date: Sat, 24 May 2014 15:39:29 GMT
+	Server: Apache/2.4.7 (Ubuntu)
+	Last-Modified: Thu, 15 May 2014 07:39:42 GMT
+	ETag: "809-4f96b666bcb80"
+	Accept-Ranges: bytes
+	Content-Length: 2057
+	Vary: Accept-Encoding
+	Connection: close
+	Content-Type: text/html
+	
+	<!DOCTYPE html>
+	<html lang="en">
+	  <head>
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <meta name="description" content="">
+	    <meta name="author" content="">
+	        <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+	    <title>Sticky Footer Template for Bootstrap</title>
+	
+	    <!-- Bootstrap core CSS -->
+	    <link href="./css/dashboard-bootstrap.css" rel="stylesheet">
+	
+	    <!-- Custom styles for this template -->
+	    <link href="./css/sticky-footer.css" rel="stylesheet">
+	
+	    <!-- Just for debugging purposes. Don't actually copy this line! -->
+	    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+	
+	    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	    <!--[if lt IE 9]>
+	      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	    <![endif]-->
+	  </head>
+	
+	  <body>
+	
+	    <!-- Begin page content -->
+	    <div class="container">
+	      <div class="page-header">
+	        <h1>Clash of Classes Dashboard</h1>
+	      </div>
+	      <p class="lead">This is the Welcome Page for the <b>dashboard</b> section of the service, which is accessible at this URL <a href="http://dashboard.clashofclasses.ch">http://dashboard.clashofclasses.ch</a></p>
+	      <p class="lead">You can go back to the <b>live</b> section <a href="http://live.clashofclasses.ch">here</a>.</p>
+	
+	<p></p>
+	        <img src="kid.jpg" width="300">
+	<p></p>
+	
+	
+	
+	    </div>
+	
+	    <div id="footer">
+	      <div class="container">
+	        <p class="text-muted">We <i class="fa fa-heart"></i> Application Level Protocols Teachers</p>
+	      </div>
+	    </div>
+	
+	
+	    <!-- Bootstrap core JavaScript
+	    ================================================== -->
+	    <!-- Placed at the end of the document so the pages load faster -->
+	  </body>
+	</html>
+
+
+Result for each "GET / HTTP/1.0 \ Host: live.clashofclasses.ch"
+
+	HTTP/1.1 200 OK
+	Date: Sat, 24 May 2014 15:43:06 GMT
+	Server: Apache/2.4.7 (Ubuntu)
+	Last-Modified: Thu, 15 May 2014 07:39:42 GMT
+	ETag: "80a-4f96b666bcb80"
+	Accept-Ranges: bytes
+	Content-Length: 2058
+	Vary: Accept-Encoding
+	Connection: close
+	Content-Type: text/html
+	
+	<!DOCTYPE html>
+	<html lang="en">
+	  <head>
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <meta name="description" content="">
+	    <meta name="author" content="">
+	        <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+	    <title>Sticky Footer Template for Bootstrap</title>
+	
+	    <!-- Bootstrap core CSS -->
+	    <link href="./css/live-bootstrap.css" rel="stylesheet">
+	
+	    <!-- Custom styles for this template -->
+	    <link href="./css/sticky-footer.css" rel="stylesheet">
+	
+	    <!-- Just for debugging purposes. Don't actually copy this line! -->
+	    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+	
+	    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	    <!--[if lt IE 9]>
+	      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	    <![endif]-->
+	  </head>
+	
+	  <body>
+	
+	    <!-- Begin page content -->
+	    <div class="container">
+	      <div class="page-header">
+	        <h1>Welcome To Clash of Classes!</h1>
+	      </div>
+	      <p class="lead">This is the Welcome Page for the <b>live</b> section of the website, which is accessible at this URL <a href="http://live.clashofclasses.ch">http://live.clashofclasses.ch</a>.</p>
+	      <p class="lead">You can jump to the <b>dashboard</b> section of the website <a href="http://dashboard.clashofclasses.ch">here</a>.</p>
+	
+	        <p></p>
+	                <img src="success.jpg" width="300">
+	        <p></p>
+	
+	
+	    </div>
+	
+	
+	    <div id="footer">
+	      <div class="container">
+	        <p class="text-muted">We <i class="fa fa-heart"></i> Application Level Protocols</p>
+	      </div>
+	    </div>
+	
+	
+	    <!-- Bootstrap core JavaScript
+	    ================================================== -->
+	    <!-- Placed at the end of the document so the pages load faster -->
+	  </body>
+	</html>
+
 
 ```
 # -- YOUR ANSWER TO QUESTION 10 --
